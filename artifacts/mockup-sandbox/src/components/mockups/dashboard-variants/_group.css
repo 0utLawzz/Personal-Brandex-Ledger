@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-amber-balance {
+    color: #d97706; /* Amber 600 */
+  }
+  .bg-amber-balance {
+    background-color: #d97706;
+  }
+  .bg-slate-fill {
+    background-color: #475569; /* Slate 600 */
+  }
+  .bg-amber-unfilled {
+    background-color: #fef3c7; /* Amber 50 */
+  }
+}
