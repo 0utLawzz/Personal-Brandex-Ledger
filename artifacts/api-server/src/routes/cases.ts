@@ -175,8 +175,8 @@ casesRouter.patch("/:id/stage", async (req, res) => {
   const id = parseInt(req.params.id);
   const { stage } = req.body as { stage: number };
 
-  if (!stage || stage < 1 || stage > 45) {
-    res.status(400).json({ error: "Stage must be between 1 and 45" });
+  if (!stage || stage < 1 || stage > 4) {
+    res.status(400).json({ error: "Stage must be between 1 and 4" });
     return;
   }
 

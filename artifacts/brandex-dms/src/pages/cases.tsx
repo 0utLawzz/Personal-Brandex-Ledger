@@ -12,14 +12,14 @@ import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { formatPKR, getStageColor } from "@/lib/format";
+import { formatPKR, getStageColor, STAGES } from "@/lib/format";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const caseSchema = z.object({
   clientId: z.coerce.number().min(1, "Client is required"),
   trademarkNumber: z.string().min(1, "Required").max(6),
   trademarkClass: z.coerce.number().min(1).max(45),
-  stage: z.coerce.number().min(1).max(45),
+  stage: z.coerce.number().min(1).max(4),
   requiredDate: z.string().optional(),
   description: z.string().optional(),
   due: z.coerce.number().optional(),
@@ -254,10 +254,21 @@ function CaseForm({ id, mode, onCancel, onSuccess }: { id?: number, mode: 'creat
               name="stage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Stage (1-45)</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="number" min={1} max={45} className="bg-white" />
-                  </FormControl>
+                  <FormLabel>Stage</FormLabel>
+                  <Select onValueChange={(val) => field.onChange(Number(val))} value={field.value ? field.value.toString() : undefined}>
+                    <FormControl>
+                      <SelectTrigger className="bg-white">
+                        <SelectValue placeholder="Select stage" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {STAGES.map((s) => (
+                        <SelectItem key={s} value={s.toString()}>
+                          Stage {s}{s === 1 ? " — Filed" : s === 2 ? " — Examination" : s === 3 ? " — Publication" : " — Registered"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

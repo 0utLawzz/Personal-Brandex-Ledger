@@ -575,7 +575,7 @@ components:
         stage:
           type: integer
           minimum: 1
-          maximum: 45
+          maximum: 4
         requiredDate:
           type: ["string", "null"]
           format: date
@@ -642,7 +642,7 @@ components:
         stage:
           type: integer
           minimum: 1
-          maximum: 45
+          maximum: 4
 
     # ─── Payment ─────────────────────────────────────────────
     Payment:

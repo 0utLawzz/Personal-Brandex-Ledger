@@ -116,7 +116,7 @@ export const ListClientCasesParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const listClientCasesResponseStageMax = 45;
+export const listClientCasesResponseStageMax = 4;
 
 
 
@@ -146,7 +146,7 @@ export const GetClientLedgerParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const getClientLedgerResponseCasesItemStageMax = 45;
+export const getClientLedgerResponseCasesItemStageMax = 4;
 
 
 
@@ -207,7 +207,7 @@ export const ListCasesQueryParams = zod.object({
   "offset": zod.coerce.number().optional()
 })
 
-export const listCasesResponseStageMax = 45;
+export const listCasesResponseStageMax = 4;
 
 
 
@@ -252,7 +252,7 @@ export const GetCaseParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const getCaseResponseStageMax = 45;
+export const getCaseResponseStageMax = 4;
 
 
 
@@ -291,7 +291,7 @@ export const UpdateCaseBody = zod.object({
   "received": zod.number().optional()
 })
 
-export const updateCaseResponseStageMax = 45;
+export const updateCaseResponseStageMax = 4;
 
 
 
@@ -328,7 +328,7 @@ export const UpdateCaseStageParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const updateCaseStageBodyStageMax = 45;
+export const updateCaseStageBodyStageMax = 4;
 
 
 
@@ -336,7 +336,7 @@ export const UpdateCaseStageBody = zod.object({
   "stage": zod.number().min(1).max(updateCaseStageBodyStageMax)
 })
 
-export const updateCaseStageResponseStageMax = 45;
+export const updateCaseStageResponseStageMax = 4;
 
 
 

@@ -56,7 +56,7 @@ export interface Case {
   trademarkClass: number;
   /**
      * @minimum 1
-     * @maximum 45
+     * @maximum 4
      */
   stage: number;
   /** @nullable */
@@ -128,7 +128,7 @@ export interface CaseUpdate {
 export interface StageUpdate {
   /**
      * @minimum 1
-     * @maximum 45
+     * @maximum 4
      */
   stage: number;
 }

@@ -8,6 +8,7 @@ import ClientsPage from "@/pages/clients";
 import ClientLedgerPage from "@/pages/client-ledger";
 import CasesPage from "@/pages/cases";
 import PaymentsPage from "@/pages/payments";
+import SettingsPage from "@/pages/settings";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/clients/:id/ledger" component={ClientLedgerPage} />
       <Route path="/cases" component={CasesPage} />
       <Route path="/payments" component={PaymentsPage} />
+      <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>
   );

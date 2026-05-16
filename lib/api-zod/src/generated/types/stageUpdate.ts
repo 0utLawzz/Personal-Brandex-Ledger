@@ -9,7 +9,7 @@
 export interface StageUpdate {
   /**
      * @minimum 1
-     * @maximum 45
+     * @maximum 4
      */
   stage: number;
 }

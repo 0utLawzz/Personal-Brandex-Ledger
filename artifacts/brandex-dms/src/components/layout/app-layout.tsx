@@ -37,10 +37,17 @@ export function Sidebar() {
         })}
       </div>
       <div className="p-4 border-t border-sidebar-border/50">
-        <button className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors font-medium">
+        <Link
+          href="/settings"
+          className={`flex items-center gap-3 px-3 py-2 w-full rounded-md transition-colors font-medium ${
+            location === "/settings"
+              ? "bg-sidebar-primary text-sidebar-primary-foreground"
+              : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          }`}
+        >
           <Settings className="h-5 w-5 shrink-0" />
           <span className="hidden md:block">Settings</span>
-        </button>
+        </Link>
       </div>
     </div>
   );
