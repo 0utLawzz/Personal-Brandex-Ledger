@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Brandex DMS"
+version = "1.0.0"
+id = "artifacts/brandex-dms"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21758
+
+[services.development]
+run = "pnpm --filter @workspace/brandex-dms run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/brandex-dms", "run", "build" ]
+publicDir = "artifacts/brandex-dms/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21758"
+BASE_PATH = "/"

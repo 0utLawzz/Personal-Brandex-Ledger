@@ -3,20 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Brandex DMS API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: clients
+    description: Client management
+  - name: cases
+    description: Trademark case management
+  - name: payments
+    description: Payment tracking
+  - name: activity
+    description: Audit and activity log
+  - name: dashboard
+    description: Dashboard and aggregates
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +34,435 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── Clients ────────────────────────────────────────────────
+  /clients:
+    get:
+      operationId: listClients
+      tags: [clients]
+      summary: List all clients
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [clients]
+      summary: Create a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+
+  /clients/{id}:
+    get:
+      operationId: getClient
+      tags: [clients]
+      summary: Get a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateClient
+      tags: [clients]
+      summary: Update a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientUpdate"
+      responses:
+        "200":
+          description: Updated client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    delete:
+      operationId: deleteClient
+      tags: [clients]
+      summary: Delete a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /clients/{id}/cases:
+    get:
+      operationId: listClientCases
+      tags: [clients]
+      summary: List cases for a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Case"
+
+  /clients/{id}/ledger:
+    get:
+      operationId: getClientLedger
+      tags: [clients]
+      summary: Get full ledger for a client (cases + payments + summary)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client ledger
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientLedger"
+
+  # ─── Cases ──────────────────────────────────────────────────
+  /cases:
+    get:
+      operationId: listCases
+      tags: [cases]
+      summary: List all cases
+      parameters:
+        - name: clientId
+          in: query
+          schema:
+            type: integer
+        - name: stage
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Case"
+    post:
+      operationId: createCase
+      tags: [cases]
+      summary: Create a trademark case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaseInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+
+  /cases/{id}:
+    get:
+      operationId: getCase
+      tags: [cases]
+      summary: Get a case
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCase
+      tags: [cases]
+      summary: Update a case
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaseUpdate"
+      responses:
+        "200":
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+    delete:
+      operationId: deleteCase
+      tags: [cases]
+      summary: Delete a case
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /cases/{id}/stage:
+    patch:
+      operationId: updateCaseStage
+      tags: [cases]
+      summary: Update case stage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StageUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+
+  # ─── Payments ───────────────────────────────────────────────
+  /payments:
+    get:
+      operationId: listPayments
+      tags: [payments]
+      summary: List payments
+      parameters:
+        - name: caseId
+          in: query
+          schema:
+            type: integer
+        - name: clientId
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    post:
+      operationId: createPayment
+      tags: [payments]
+      summary: Create a payment record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+
+  /payments/{id}:
+    get:
+      operationId: getPayment
+      tags: [payments]
+      summary: Get a payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+    patch:
+      operationId: updatePayment
+      tags: [payments]
+      summary: Update a payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+    delete:
+      operationId: deletePayment
+      tags: [payments]
+      summary: Delete a payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Activity ───────────────────────────────────────────────
+  /activity:
+    get:
+      operationId: listActivity
+      tags: [activity]
+      summary: List activity log
+      parameters:
+        - name: entityType
+          in: query
+          schema:
+            type: string
+        - name: entityId
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Activity entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityEntry"
+
+  # ─── Dashboard ──────────────────────────────────────────────
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard aggregate summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +473,291 @@ components:
       required:
         - status
 
+    # ─── Client ─────────────────────────────────────────────
+    Client:
+      type: object
+      required: [id, clientCode, name, createdAt]
+      properties:
+        id:
+          type: integer
+        clientCode:
+          type: string
+          description: "e.g. X-413"
+        name:
+          type: string
+        city:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ClientInput:
+      type: object
+      required: [clientCode, name]
+      properties:
+        clientCode:
+          type: string
+        name:
+          type: string
+        city:
+          type: string
+        email:
+          type: string
+        imageUrl:
+          type: string
+        notes:
+          type: string
+
+    ClientUpdate:
+      type: object
+      properties:
+        clientCode:
+          type: string
+        name:
+          type: string
+        city:
+          type: string
+        email:
+          type: string
+        imageUrl:
+          type: string
+        notes:
+          type: string
+
+    ClientLedger:
+      type: object
+      required: [client, cases, payments, totalDue, totalReceived, balance]
+      properties:
+        client:
+          $ref: "#/components/schemas/Client"
+        cases:
+          type: array
+          items:
+            $ref: "#/components/schemas/Case"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payment"
+        totalDue:
+          type: number
+        totalReceived:
+          type: number
+        balance:
+          type: number
+
+    # ─── Case ────────────────────────────────────────────────
+    Case:
+      type: object
+      required: [id, clientId, trademarkNumber, trademarkClass, stage, createdAt]
+      properties:
+        id:
+          type: integer
+        clientId:
+          type: integer
+        clientCode:
+          type: ["string", "null"]
+        clientName:
+          type: ["string", "null"]
+        trademarkNumber:
+          type: string
+          description: "6-digit trademark number"
+        trademarkClass:
+          type: integer
+        stage:
+          type: integer
+          minimum: 1
+          maximum: 45
+        requiredDate:
+          type: ["string", "null"]
+          format: date
+        description:
+          type: ["string", "null"]
+        due:
+          type: number
+        received:
+          type: number
+        total:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CaseInput:
+      type: object
+      required: [clientId, trademarkNumber, trademarkClass, stage]
+      properties:
+        clientId:
+          type: integer
+        trademarkNumber:
+          type: string
+        trademarkClass:
+          type: integer
+        stage:
+          type: integer
+        requiredDate:
+          type: string
+          format: date
+        description:
+          type: string
+        due:
+          type: number
+        received:
+          type: number
+
+    CaseUpdate:
+      type: object
+      properties:
+        trademarkNumber:
+          type: string
+        trademarkClass:
+          type: integer
+        stage:
+          type: integer
+        requiredDate:
+          type: string
+          format: date
+        description:
+          type: string
+        due:
+          type: number
+        received:
+          type: number
+
+    StageUpdate:
+      type: object
+      required: [stage]
+      properties:
+        stage:
+          type: integer
+          minimum: 1
+          maximum: 45
+
+    # ─── Payment ─────────────────────────────────────────────
+    Payment:
+      type: object
+      required: [id, clientId, amount, type, date, createdAt]
+      properties:
+        id:
+          type: integer
+        clientId:
+          type: integer
+        caseId:
+          type: ["integer", "null"]
+        trademarkNumber:
+          type: ["string", "null"]
+        clientName:
+          type: ["string", "null"]
+        type:
+          type: string
+          enum: [due, received]
+        amount:
+          type: number
+        date:
+          type: string
+          format: date
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    PaymentInput:
+      type: object
+      required: [clientId, type, amount, date]
+      properties:
+        clientId:
+          type: integer
+        caseId:
+          type: integer
+        type:
+          type: string
+          enum: [due, received]
+        amount:
+          type: number
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    PaymentUpdate:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [due, received]
+        amount:
+          type: number
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    # ─── Activity ────────────────────────────────────────────
+    ActivityEntry:
+      type: object
+      required: [id, entityType, entityId, action, createdAt]
+      properties:
+        id:
+          type: integer
+        entityType:
+          type: string
+        entityId:
+          type: integer
+        action:
+          type: string
+        details:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    # ─── Dashboard ───────────────────────────────────────────
+    DashboardSummary:
+      type: object
+      required:
+        - totalClients
+        - totalCases
+        - totalDue
+        - totalReceived
+        - balance
+        - casesByStage
+        - recentActivity
+      properties:
+        totalClients:
+          type: integer
+        totalCases:
+          type: integer
+        totalDue:
+          type: number
+        totalReceived:
+          type: number
+        balance:
+          type: number
+        casesByStage:
+          type: array
+          items:
+            type: object
+            required: [stage, count]
+            properties:
+              stage:
+                type: integer
+              count:
+                type: integer
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityEntry"
