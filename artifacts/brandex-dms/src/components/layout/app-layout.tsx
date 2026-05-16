@@ -24,11 +24,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive 
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium" 
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              }`}
+              className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sidebar-primary-foreground font-medium bg-[#eb2459]"
             >
               <item.icon className="h-5 w-5 shrink-0" />
               <span className="hidden md:block">{item.label}</span>
