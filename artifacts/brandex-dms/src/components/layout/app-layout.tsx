@@ -17,7 +17,6 @@ export function Sidebar() {
         <div className="font-bold text-lg hidden md:block text-sidebar-primary-foreground tracking-tight">Brandex DMS</div>
         <div className="font-bold text-xl md:hidden text-sidebar-primary-foreground">B</div>
       </div>
-      
       <div className="flex-1 py-4 flex flex-col gap-1 px-2 md:px-3">
         {navItems.map((item) => {
           const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
@@ -37,9 +36,8 @@ export function Sidebar() {
           );
         })}
       </div>
-
       <div className="p-4 border-t border-sidebar-border/50">
-        <button className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
+        <button className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors font-medium">
           <Settings className="h-5 w-5 shrink-0" />
           <span className="hidden md:block">Settings</span>
         </button>
