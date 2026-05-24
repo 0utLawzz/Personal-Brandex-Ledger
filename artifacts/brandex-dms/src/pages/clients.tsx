@@ -4,7 +4,7 @@ import { useListClients, useGetClient, useCreateClient, useUpdateClient, useDele
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Trash2, ChevronRight, FileText } from "lucide-react";
+import { Search, Plus, Trash2, FileText, ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,89 +26,141 @@ export default function ClientsPage() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
   const { data: clients, isLoading } = useListClients({ search });
   const [_, setLocation] = useLocation();
 
+  const showDetail = isCreating || selectedId !== null;
+
+  const handleSelectRow = (id: number) => {
+    setSelectedId(id);
+    setIsCreating(false);
+    setMobileView("detail");
+  };
+
+  const handleNewClient = () => {
+    setIsCreating(true);
+    setSelectedId(null);
+    setMobileView("detail");
+  };
+
+  const handleMobileBack = () => {
+    setMobileView("list");
+    setIsCreating(false);
+  };
+
+  const ListPane = (
+    <>
+      <div className="h-14 flex items-center justify-between px-4 border-b border-slate-200 bg-white shrink-0">
+        <h1 className="font-semibold text-slate-900">Clients</h1>
+        <Button size="sm" onClick={handleNewClient}>
+          <Plus className="h-4 w-4 mr-1.5" />
+          New Client
+        </Button>
+      </div>
+      <div className="p-2 border-b border-slate-200 bg-slate-50 shrink-0">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+          <Input
+            placeholder="Search clients by name, code..."
+            className="pl-9 bg-white h-9 text-sm"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="flex-1 overflow-auto bg-white min-h-0">
+        {isLoading ? (
+          <div className="p-4 space-y-3">
+            {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-12 bg-slate-100 rounded animate-pulse" />)}
+          </div>
+        ) : clients?.length === 0 ? (
+          <div className="p-8 text-center text-slate-500 text-sm">No clients found</div>
+        ) : (
+          <table className="w-full text-sm text-left">
+            <thead className="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 border-b border-slate-200">
+              <tr>
+                <th className="px-4 py-2 font-medium">Code</th>
+                <th className="px-4 py-2 font-medium">Name</th>
+                <th className="px-4 py-2 font-medium hidden sm:table-cell">City</th>
+                <th className="px-4 py-2 font-medium hidden md:table-cell">Email</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {clients?.map((client) => (
+                <tr
+                  key={client.id}
+                  onClick={() => handleSelectRow(client.id)}
+                  className={`hover:bg-slate-50 cursor-pointer transition-colors ${selectedId === client.id ? "bg-blue-50/50" : ""}`}
+                >
+                  <td className="px-4 py-2.5 font-mono text-xs text-slate-600">{client.clientCode}</td>
+                  <td className="px-4 py-2.5 font-medium text-slate-900">{client.name}</td>
+                  <td className="px-4 py-2.5 text-slate-600 hidden sm:table-cell">{client.city || "-"}</td>
+                  <td className="px-4 py-2.5 text-slate-600 hidden md:table-cell">{client.email || "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </>
+  );
+
+  const DetailPane = (
+    <div className="h-full bg-slate-50 overflow-auto">
+      {/* Mobile back button */}
+      <div className="md:hidden h-11 flex items-center px-3 border-b border-slate-200 bg-white shrink-0">
+        <button
+          onClick={handleMobileBack}
+          className="flex items-center gap-1.5 text-sm text-blue-600 font-medium"
+        >
+          <ArrowLeft size={15} />
+          Clients
+        </button>
+      </div>
+      {isCreating ? (
+        <ClientForm
+          mode="create"
+          onCancel={() => { setIsCreating(false); setMobileView("list"); }}
+          onSuccess={(id) => { setIsCreating(false); setSelectedId(id); }}
+        />
+      ) : selectedId ? (
+        <ClientDetail id={selectedId} onDeleted={() => { setSelectedId(null); setMobileView("list"); }} />
+      ) : (
+        <div className="h-full flex items-center justify-center text-slate-400 text-sm">
+          Select a client to view details
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <AppLayout>
-      <ResizablePanelGroup direction="horizontal" className="h-full items-stretch">
+      {/* Mobile layout: single pane at a time */}
+      <div className="flex flex-col h-full md:hidden">
+        {mobileView === "list" ? (
+          <div className="flex flex-col flex-1 min-h-0">{ListPane}</div>
+        ) : (
+          <div className="flex flex-col flex-1 min-h-0">{DetailPane}</div>
+        )}
+      </div>
+
+      {/* Desktop layout: side-by-side */}
+      <ResizablePanelGroup direction="horizontal" className="h-full hidden md:flex items-stretch">
         <ResizablePanel defaultSize={50} minSize={30} className="flex flex-col border-r border-slate-200">
-          <div className="h-14 flex items-center justify-between px-4 border-b border-slate-200 bg-white">
-            <h1 className="font-semibold text-slate-900">Clients</h1>
-            <Button size="sm" onClick={() => { setIsCreating(true); setSelectedId(null); }}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Client
-            </Button>
-          </div>
-          <div className="p-2 border-b border-slate-200 bg-slate-50">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
-              <Input
-                placeholder="Search clients by name, code..."
-                className="pl-9 bg-white h-9 text-sm"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="flex-1 overflow-auto bg-white">
-            {isLoading ? (
-              <div className="p-4 space-y-3">
-                {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-12 bg-slate-100 rounded animate-pulse" />)}
-              </div>
-            ) : clients?.length === 0 ? (
-              <div className="p-8 text-center text-slate-500 text-sm">No clients found</div>
-            ) : (
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 border-b border-slate-200">
-                  <tr>
-                    <th className="px-4 py-2 font-medium">Code</th>
-                    <th className="px-4 py-2 font-medium">Name</th>
-                    <th className="px-4 py-2 font-medium">City</th>
-                    <th className="px-4 py-2 font-medium">Email</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {clients?.map((client) => (
-                    <tr 
-                      key={client.id} 
-                      onClick={() => { setSelectedId(client.id); setIsCreating(false); }}
-                      className={`hover:bg-slate-50 cursor-pointer transition-colors ${selectedId === client.id ? 'bg-blue-50/50' : ''}`}
-                    >
-                      <td className="px-4 py-2 font-mono text-xs text-slate-600">{client.clientCode}</td>
-                      <td className="px-4 py-2 font-medium text-slate-900">{client.name}</td>
-                      <td className="px-4 py-2 text-slate-600">{client.city || '-'}</td>
-                      <td className="px-4 py-2 text-slate-600">{client.email || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+          {ListPane}
         </ResizablePanel>
-
         <ResizableHandle />
-
         <ResizablePanel defaultSize={50}>
-          <div className="h-full bg-slate-50 overflow-auto">
-            {isCreating ? (
-              <ClientForm mode="create" onCancel={() => setIsCreating(false)} onSuccess={(id) => { setIsCreating(false); setSelectedId(id); }} />
-            ) : selectedId ? (
-              <ClientDetail id={selectedId} onDeleted={() => setSelectedId(null)} />
-            ) : (
-              <div className="h-full flex items-center justify-center text-slate-400 text-sm">
-                Select a client to view details
-              </div>
-            )}
-          </div>
+          {DetailPane}
         </ResizablePanel>
       </ResizablePanelGroup>
     </AppLayout>
   );
 }
 
-function ClientForm({ id, mode, onCancel, onSuccess }: { id?: number, mode: 'create' | 'edit', onCancel: () => void, onSuccess: (id: number) => void }) {
-  const { data: client, isLoading } = useGetClient(id!, { query: { enabled: mode === 'edit' && !!id, queryKey: getGetClientQueryKey(id!) } });
+function ClientForm({ id, mode, onCancel, onSuccess }: { id?: number; mode: "create" | "edit"; onCancel: () => void; onSuccess: (id: number) => void }) {
+  const { data: client, isLoading } = useGetClient(id!, { query: { enabled: mode === "edit" && !!id, queryKey: getGetClientQueryKey(id!) } });
   const createMutation = useCreateClient();
   const updateMutation = useUpdateClient();
   const queryClient = useQueryClient();
@@ -122,17 +174,17 @@ function ClientForm({ id, mode, onCancel, onSuccess }: { id?: number, mode: 'cre
       city: client?.city || "",
       email: client?.email || "",
       notes: client?.notes || "",
-    }
+    },
   });
 
   const onSubmit = (data: z.infer<typeof clientSchema>) => {
-    if (mode === 'create') {
+    if (mode === "create") {
       createMutation.mutate({ data }, {
         onSuccess: (res) => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
           toast({ title: "Client created" });
           onSuccess(res.id);
-        }
+        },
       });
     } else {
       updateMutation.mutate({ id: id!, data }, {
@@ -141,92 +193,61 @@ function ClientForm({ id, mode, onCancel, onSuccess }: { id?: number, mode: 'cre
           queryClient.invalidateQueries({ queryKey: getGetClientQueryKey(id!) });
           toast({ title: "Client updated" });
           onSuccess(id!);
-        }
+        },
       });
     }
   };
 
-  if (mode === 'edit' && isLoading) return <div className="p-6">Loading...</div>;
+  if (mode === "edit" && isLoading) return <div className="p-6">Loading...</div>;
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h2 className="text-lg font-semibold mb-6">{mode === 'create' ? 'New Client' : 'Edit Client'}</h2>
+    <div className="p-4 md:p-6 max-w-2xl mx-auto">
+      <h2 className="text-lg font-semibold mb-6">{mode === "create" ? "New Client" : "Edit Client"}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="clientCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Client Code</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="e.g. X-413" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>City</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="email" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <FormField
-            control={form.control}
-            name="notes"
-            render={({ field }) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField control={form.control} name="clientCode" render={({ field }) => (
               <FormItem>
-                <FormLabel>Notes</FormLabel>
-                <FormControl>
-                  <textarea 
-                    {...field} 
-                    className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                </FormControl>
+                <FormLabel>Client Code</FormLabel>
+                <FormControl><Input {...field} placeholder="e.g. X-413" /></FormControl>
                 <FormMessage />
               </FormItem>
-            )}
-          />
+            )} />
+            <FormField control={form.control} name="name" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name</FormLabel>
+                <FormControl><Input {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="city" render={({ field }) => (
+              <FormItem>
+                <FormLabel>City</FormLabel>
+                <FormControl><Input {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="email" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl><Input {...field} type="email" /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+          </div>
+          <FormField control={form.control} name="notes" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes</FormLabel>
+              <FormControl>
+                <textarea {...field} className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" type="button" onClick={onCancel}>Cancel</Button>
             <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-              {mode === 'create' ? 'Create' : 'Save Changes'}
+              {mode === "create" ? "Create" : "Save Changes"}
             </Button>
           </div>
         </form>
@@ -235,7 +256,7 @@ function ClientForm({ id, mode, onCancel, onSuccess }: { id?: number, mode: 'cre
   );
 }
 
-function ClientDetail({ id, onDeleted }: { id: number, onDeleted: () => void }) {
+function ClientDetail({ id, onDeleted }: { id: number; onDeleted: () => void }) {
   const [isEditing, setIsEditing] = useState(false);
   const { data: client, isLoading } = useGetClient(id, { query: { enabled: !!id, queryKey: getGetClientQueryKey(id) } });
   const deleteMutation = useDeleteClient();
@@ -251,20 +272,20 @@ function ClientDetail({ id, onDeleted }: { id: number, onDeleted: () => void }) 
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-6 border-b border-slate-200 bg-white flex justify-between items-start">
+      <div className="p-4 md:p-6 border-b border-slate-200 bg-white flex flex-wrap justify-between items-start gap-3">
         <div>
           <div className="text-sm text-slate-500 font-mono mb-1">{client.clientCode}</div>
           <h2 className="text-xl font-semibold text-slate-900">{client.name}</h2>
-          <div className="text-sm text-slate-600 mt-2 flex gap-4">
+          <div className="text-sm text-slate-600 mt-2 flex gap-4 flex-wrap">
             {client.city && <span>{client.city}</span>}
             {client.email && <span>{client.email}</span>}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Link href={`/clients/${id}/ledger`}>
             <Button variant="secondary" size="sm">
-              <FileText className="h-4 w-4 mr-2" />
-              View Ledger
+              <FileText className="h-4 w-4 mr-1.5" />
+              Ledger
             </Button>
           </Link>
           <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>Edit</Button>
@@ -275,15 +296,15 @@ function ClientDetail({ id, onDeleted }: { id: number, onDeleted: () => void }) 
                   queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
                   toast({ title: "Client deleted" });
                   onDeleted();
-                }
-              })
+                },
+              });
             }
           }}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
-      <div className="p-6 flex-1 overflow-auto">
+      <div className="p-4 md:p-6 flex-1 overflow-auto">
         <div className="space-y-6 max-w-2xl">
           <div>
             <h3 className="text-sm font-semibold text-slate-900 mb-2 uppercase tracking-wide">Notes</h3>
